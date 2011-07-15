@@ -6,7 +6,6 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.text.format.Time;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -26,8 +25,6 @@ public class Hello extends Activity {
 	@Override
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -60,17 +57,27 @@ public class Hello extends Activity {
 		final Time now = new Time();
 		now.setToNow();
 
-		now.monthDay -= (mDay - 1);
-		now.normalize(true);
-		now.month -= mMonth;
-		now.normalize(true);
-		now.year -= mYear;
+		final Time bday = new Time();
+		bday.monthDay = mDay;
+		bday.month = mMonth;
+		bday.year = mYear;
+		bday.normalize(true);
 
-		if (now.year < 0) {
+		if (now.before(bday)) {
 			sb.append("Du bist noch nicht geboren!");
-		} else {
+		} else if (now.month == mMonth && now.monthDay == mDay) {
+			now.year -= mYear;
+
 			sb.append("Alles gute zum ").append(now.year)
 					.append(". Geburstag!");
+		} else {
+			bday.year = now.year;
+			int days = bday.yearDay - now.yearDay;
+			if (days < 0) {
+				days += 365;
+			}
+			sb.append("Du hast erst in ").append(days)
+					.append(" Tagen Geburtstag!");
 		}
 
 		mDateDisplay.setText(sb);
